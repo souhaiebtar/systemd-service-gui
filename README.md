@@ -1,4 +1,4 @@
-# IcErs - Systemd Service Manager
+# Systemd Service GUI
 
 A modern, cross-platform desktop application built with Rust and Iced for managing systemd services.
 
@@ -33,7 +33,7 @@ cargo build --release
 Release output:
 
 ```bash
-./target/release/icers
+./target/release/systemd-service-gui
 ```
 
 ## Generate `.AppImage` (Linux)
@@ -61,7 +61,7 @@ sudo apt install -y patchelf curl
 Generated file:
 
 ```bash
-dist/appimage/icers-<version>-<arch>.AppImage
+dist/appimage/systemd-service-gui-<version>-<arch>.AppImage
 ```
 
 `linuxdeploy` and `appimagetool` are downloaded automatically into `dist/appimage/tools/`.
@@ -77,8 +77,8 @@ Optional flags:
 Run the generated AppImage:
 
 ```bash
-chmod +x dist/appimage/icers-<version>-<arch>.AppImage
-./dist/appimage/icers-<version>-<arch>.AppImage
+chmod +x dist/appimage/systemd-service-gui-<version>-<arch>.AppImage
+./dist/appimage/systemd-service-gui-<version>-<arch>.AppImage
 ```
 
 ## Running
@@ -90,7 +90,7 @@ cargo run
 Or run the compiled binary:
 
 ```bash
-./target/release/icers
+./target/release/systemd-service-gui
 ```
 
 ## Usage

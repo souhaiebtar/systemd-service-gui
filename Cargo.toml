@@ -1,5 +1,5 @@
 [package]
-name = "icers"
+name = "systemd-service-gui"
 version = "0.1.0"
 edition = "2021"
 

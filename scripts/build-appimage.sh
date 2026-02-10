@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-APP_NAME="icers"
+APP_NAME="systemd-service-gui"
 PROJECT_ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 CARGO_MANIFEST="$PROJECT_ROOT/Cargo.toml"
 DESKTOP_FILE="$PROJECT_ROOT/packaging/appimage/${APP_NAME}.desktop"

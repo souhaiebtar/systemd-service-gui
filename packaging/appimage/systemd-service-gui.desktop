@@ -1,11 +1,10 @@
 [Desktop Entry]
 Type=Application
-Name=IcErs
+Name=Systemd Service GUI
 Comment=Systemd Service Manager
-Exec=icers
-Icon=icers
+Exec=systemd-service-gui
+Icon=systemd-service-gui
 Terminal=false
 Categories=System;Utility;
 Keywords=systemd;service;manager;
 StartupNotify=true
-
