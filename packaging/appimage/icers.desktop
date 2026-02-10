@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=IcErs
+Comment=Systemd Service Manager
+Exec=icers
+Icon=icers
+Terminal=false
+Categories=System;Utility;
+Keywords=systemd;service;manager;
+StartupNotify=true
+

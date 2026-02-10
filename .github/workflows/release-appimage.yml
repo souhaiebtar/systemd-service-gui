@@ -1,0 +1,66 @@
+name: Release AppImage
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-upload-appimage:
+    name: Build and Upload AppImage
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential \
+            curl \
+            patchelf \
+            pkg-config \
+            libasound2-dev \
+            libxkbcommon-dev \
+            libwayland-dev \
+            libx11-dev \
+            libx11-xcb-dev \
+            libxcb-render0-dev \
+            libxcb-shape0-dev \
+            libxcb-xfixes0-dev \
+            libxcb-randr0-dev \
+            libxi-dev \
+            libgl1-mesa-dev \
+            libegl1-mesa-dev
+
+      - name: Build AppImage
+        run: ./scripts/build-appimage.sh
+
+      - name: Verify AppImage output
+        run: |
+          shopt -s nullglob
+          files=(dist/appimage/*.AppImage)
+          if [ "${#files[@]}" -eq 0 ]; then
+            echo "No AppImage file found in dist/appimage"
+            exit 1
+          fi
+          ls -lh dist/appimage/*.AppImage
+
+      - name: Upload AppImage as workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: appimage
+          path: dist/appimage/*.AppImage
+          if-no-files-found: error
+
+      - name: Attach AppImage to GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+        run: |
+          gh release upload "$RELEASE_TAG" dist/appimage/*.AppImage --clobber
+

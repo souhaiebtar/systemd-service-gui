@@ -16,10 +16,69 @@ A modern, cross-platform desktop application built with Rust and Iced for managi
 - systemd (Linux systems only - the application uses systemctl commands)
 - For non-Linux systems, the application will show an error as systemd is not available
 
-## Building
+## Build / Compile
+
+Build a debug binary:
+
+```bash
+cargo build
+```
+
+Build an optimized release binary:
 
 ```bash
 cargo build --release
+```
+
+Release output:
+
+```bash
+./target/release/icers
+```
+
+## Generate `.AppImage` (Linux)
+
+This repository includes everything needed to generate a Linux AppImage.
+
+### Prerequisites
+
+- Rust toolchain (`cargo`)
+- `curl` or `wget` (used to download `linuxdeploy` and `appimagetool`)
+- `patchelf` (required by `linuxdeploy` on most distributions)
+
+Example (Debian/Ubuntu):
+
+```bash
+sudo apt install -y patchelf curl
+```
+
+### Generate command
+
+```bash
+./scripts/build-appimage.sh
+```
+
+Generated file:
+
+```bash
+dist/appimage/icers-<version>-<arch>.AppImage
+```
+
+`linuxdeploy` and `appimagetool` are downloaded automatically into `dist/appimage/tools/`.
+
+Optional flags:
+
+```bash
+./scripts/build-appimage.sh --arch x86_64
+./scripts/build-appimage.sh --arch aarch64
+./scripts/build-appimage.sh --skip-tool-download
+```
+
+Run the generated AppImage:
+
+```bash
+chmod +x dist/appimage/icers-<version>-<arch>.AppImage
+./dist/appimage/icers-<version>-<arch>.AppImage
 ```
 
 ## Running
