@@ -3,9 +3,7 @@ name: Release AppImage
 on:
   push:
     tags:
-      - "v*"
-  release:
-    types: [published]
+      - "*"
   workflow_dispatch:
     inputs:
       tag:
@@ -70,13 +68,10 @@ jobs:
         id: release_tag
         env:
           EVENT_NAME: ${{ github.event_name }}
-          RELEASE_TAG: ${{ github.event.release.tag_name }}
           REF_TAG: ${{ github.ref_name }}
           INPUT_TAG: ${{ github.event.inputs.tag }}
         run: |
-          if [ "$EVENT_NAME" = "release" ]; then
-            TAG="$RELEASE_TAG"
-          elif [ "$EVENT_NAME" = "push" ]; then
+          if [ "$EVENT_NAME" = "push" ]; then
             TAG="$REF_TAG"
           else
             TAG="$INPUT_TAG"
