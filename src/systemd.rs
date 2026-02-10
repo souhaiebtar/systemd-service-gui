@@ -1,5 +1,6 @@
 use std::process::Command;
 use serde::{Deserialize, Serialize};
+use serde_json::Value;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ServiceInfo {
@@ -41,10 +42,92 @@ pub fn list_services() -> Result<Vec<ServiceInfo>, String> {
     }
 
     let stdout = String::from_utf8_lossy(&output.stdout);
-    let services: Vec<ServiceInfo> = serde_json::from_str(&stdout)
+    let json: Value = serde_json::from_str(&stdout)
         .map_err(|e| format!("Failed to parse JSON: {}", e))?;
 
+    let rows = match json {
+        Value::Array(rows) => rows,
+        Value::Object(mut obj) => match obj.remove("units") {
+            Some(Value::Array(rows)) => rows,
+            _ => return Err("Unexpected JSON format from systemctl".to_string()),
+        },
+        _ => return Err("Unexpected JSON format from systemctl".to_string()),
+    };
+
+    let mut services = Vec::with_capacity(rows.len());
+
+    for row in rows {
+        let name = extract_string(
+            &row,
+            &["name", "unit", "Unit", "id", "Id", "names", "Names"],
+        );
+        if name.is_empty() {
+            continue;
+        }
+
+        services.push(ServiceInfo {
+            name,
+            description: extract_string(&row, &["description", "Description"]),
+            load_state: extract_string(&row, &["load_state", "load", "LoadState", "Load"]),
+            active_state: extract_string(&row, &["active_state", "active", "ActiveState", "Active"]),
+            sub_state: extract_string(&row, &["sub_state", "sub", "SubState", "Sub"]),
+            unit_file_state: extract_string(
+                &row,
+                &["unit_file_state", "unit_file", "UnitFileState", "UnitFile"],
+            ),
+            followed_by: extract_string_vec(
+                &row,
+                &["followed_by", "followed", "following", "FollowedBy", "Following"],
+            ),
+        });
+    }
+
     Ok(services)
+}
+
+fn extract_string(row: &Value, keys: &[&str]) -> String {
+    for key in keys {
+        if let Some(value) = row.get(*key) {
+            match value {
+                Value::String(s) => {
+                    if !s.is_empty() {
+                        return s.clone();
+                    }
+                }
+                Value::Number(n) => return n.to_string(),
+                Value::Bool(b) => return b.to_string(),
+                _ => {}
+            }
+        }
+    }
+
+    String::new()
+}
+
+fn extract_string_vec(row: &Value, keys: &[&str]) -> Vec<String> {
+    for key in keys {
+        if let Some(value) = row.get(*key) {
+            match value {
+                Value::Array(values) => {
+                    let out: Vec<String> = values
+                        .iter()
+                        .filter_map(|v| v.as_str().map(|s| s.to_string()))
+                        .collect();
+                    if !out.is_empty() {
+                        return out;
+                    }
+                }
+                Value::String(s) => {
+                    if !s.is_empty() {
+                        return vec![s.clone()];
+                    }
+                }
+                _ => {}
+            }
+        }
+    }
+
+    Vec::new()
 }
 
 pub fn get_service_status(service_name: &str) -> Result<ServiceStatus, String> {
