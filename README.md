@@ -1,70 +1,119 @@
 # Systemd Service GUI
 
-A modern, cross-platform desktop application built with Rust and Iced for managing systemd services.
+A Rust + Iced desktop app to inspect and manage `systemd` services.
 
 ## Features
 
-- View all systemd services with their status
-- Start, stop, and restart services with a single click
-- Real-time service status updates
-- Clean, modern GUI interface
-- Cross-platform support (Linux, macOS, Windows)
+- List all services from `systemctl`
+- Start, stop, and restart services
+- Filter by service name (live text filter)
+- Filter by status buttons:
+  - `running`
+  - `exited`
+  - `dead`
+  - `active`
+  - `inactive`
+- Refresh service list from the UI
+- Build and publish Linux AppImage artifacts via GitHub Actions
 
-## Prerequisites
+## Requirements
 
-- Rust (latest stable)
-- systemd (Linux systems only - the application uses systemctl commands)
-- For non-Linux systems, the application will show an error as systemd is not available
+- Linux with `systemd`
+- `systemctl` available in `PATH`
+- Permission to manage services (root/sudo or appropriate polkit rules)
 
-## Build / Compile
+## Install (Latest AppImage)
 
-Build a debug binary:
+Run this one-liner:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/souhaiebtar/systemd-service-gui/main/scripts/install-latest-appimage.sh | bash
+```
+
+What the script does:
+
+- Downloads the latest release AppImage from GitHub
+- Selects the matching architecture when possible (`x86_64` / `aarch64`)
+- Installs it to `~/.local/bin/systemd-service-gui.AppImage`
+- Runs `chmod +x` on the AppImage
+- Creates desktop entry:
+  - `~/.local/share/applications/systemd-service-gui.desktop`
+- Creates icon:
+  - `~/.local/share/icons/hicolor/scalable/apps/systemd-service-gui.svg`
+
+After install, launch from your app menu or run:
+
+```bash
+~/.local/bin/systemd-service-gui.AppImage
+```
+
+## Build From Source
+
+### Prerequisites
+
+Install Rust and system dependencies. Example for Debian/Ubuntu:
+
+```bash
+sudo apt update
+sudo apt install -y \
+  build-essential \
+  pkg-config \
+  curl \
+  libasound2-dev \
+  libxkbcommon-dev \
+  libwayland-dev \
+  libx11-dev \
+  libx11-xcb-dev \
+  libxcb-render0-dev \
+  libxcb-shape0-dev \
+  libxcb-xfixes0-dev \
+  libxcb-randr0-dev \
+  libxi-dev \
+  libgl1-mesa-dev \
+  libegl1-mesa-dev
+```
+
+### Compile
+
+Debug:
 
 ```bash
 cargo build
 ```
 
-Build an optimized release binary:
+Release:
 
 ```bash
 cargo build --release
 ```
 
-Release output:
+Run release binary:
 
 ```bash
 ./target/release/systemd-service-gui
 ```
 
-## Generate `.AppImage` (Linux)
+## Build AppImage Locally
 
-This repository includes everything needed to generate a Linux AppImage.
+The repository includes `scripts/build-appimage.sh`.
 
-### Prerequisites
-
-- Rust toolchain (`cargo`)
-- `curl` or `wget` (used to download `linuxdeploy` and `appimagetool`)
-- `patchelf` (required by `linuxdeploy` on most distributions)
-
-Example (Debian/Ubuntu):
+Additional prerequisite:
 
 ```bash
-sudo apt install -y patchelf curl
+sudo apt install -y patchelf
 ```
 
-### Generate command
+Build AppImage:
 
 ```bash
 ./scripts/build-appimage.sh
 ```
 
-Generated file:
+Output:
 
 ```bash
 dist/appimage/systemd-service-gui-<version>-<arch>.AppImage
 ```
-
-`linuxdeploy` and `appimagetool` are downloaded automatically into `dist/appimage/tools/`.
 
 Optional flags:
 
@@ -74,60 +123,28 @@ Optional flags:
 ./scripts/build-appimage.sh --skip-tool-download
 ```
 
-Run the generated AppImage:
+## Release Automation
+
+GitHub workflow: `.github/workflows/release-appimage.yml`
+
+- Trigger: push tag matching `v*`
+- Also supports manual dispatch
+- Builds AppImage and attaches it to the corresponding GitHub Release
+
+Create and push a release tag:
 
 ```bash
-chmod +x dist/appimage/systemd-service-gui-<version>-<arch>.AppImage
-./dist/appimage/systemd-service-gui-<version>-<arch>.AppImage
+git tag -a v0.1.4 -m "v0.1.4"
+git push origin v0.1.4
 ```
 
-## Running
+## Project Structure
 
-```bash
-cargo run
-```
-
-Or run the compiled binary:
-
-```bash
-./target/release/systemd-service-gui
-```
-
-## Usage
-
-1. **Refresh**: Click the "Refresh" button to reload the list of services
-2. **Start**: Click the "Start" button next to a service to start it
-3. **Stop**: Click the "Stop" button next to a service to stop it
-4. **Restart**: Click the "Restart" button next to a service to restart it
-
-The application displays:
-- Service name
-- Service description
-- Active state (active/inactive)
-- Sub-state (running, exited, etc.)
-
-## Requirements
-
-The application requires `systemctl` to be available in the PATH and appropriate permissions to manage services. On most Linux distributions, you'll need to run the application with sudo or as root to control services:
-
-```bash
-sudo cargo run
-```
-
-Or set up proper polkit rules to allow your user to manage services without root.
-
-## Architecture
-
-The application consists of two main modules:
-
-- `systemd.rs`: Handles all interactions with systemd via the `systemctl` command-line tool
-- `main.rs`: The Iced GUI application that displays the service list and handles user interactions
-
-## Dependencies
-
-- `iced = "0.12"`: The GUI framework
-- `tokio = "1"`: Async runtime for non-blocking systemctl calls
-- `serde` & `serde_json`: For parsing systemctl JSON output
+- `src/main.rs`: Iced UI and filtering/actions
+- `src/systemd.rs`: `systemctl` integration + JSON parsing
+- `scripts/build-appimage.sh`: local AppImage builder
+- `scripts/install-latest-appimage.sh`: installer for latest release AppImage
+- `packaging/appimage/`: desktop file + SVG icon used for AppImage
 
 ## License
 
